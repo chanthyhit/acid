@@ -41,10 +41,6 @@ public class ReportController {
         return cusService.calPointByEmail();
     }
 
-    /**
-     * Implementing
-     * @return
-     */
     @GetMapping("/summary_by_month")
     public Map<String, Double> summaryByMonth(){
         return outService.calPointByMonth();

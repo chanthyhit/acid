@@ -1,5 +1,6 @@
 package com.acid.acid.service;
 
+import com.acid.acid.utilities.Utility;
 import com.acid.acid.entity.OutboundItem;
 import com.acid.acid.repository.OutboundItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,10 +9,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +23,40 @@ public class OutboundItemService {
 
     public Map<String, Double> calPointByMonth(){
         var histories = findAll();
+        var pointG100 = histories.stream()
+                .filter(i -> (i.getQty() * i.getUnitPrice()) > 100)
+                .collect(Collectors.groupingBy(
+                        i -> Utility.getMonth(i.getDateTime()),
+                        Collectors.reducing(
+                                0.0,
+                                i -> Utility.round((i.getQty() * i.getUnitPrice()) * 2,0),
+                                Double::sum
+                        ))
+                );
+        var pointB50T100 = histories.stream()
+                .filter(i -> (i.getUnitPrice() * i.getQty()) >= 50 && (i.getUnitPrice() * i.getQty()) <= 100)
+                .collect(Collectors.groupingBy(
+                        i -> Utility.getMonth(i.getDateTime()),
+                        Collectors.reducing(
+                                0.0,
+                                i -> Utility.round((i.getUnitPrice() * i.getQty()) * 1, 0),
+                                Double::sum
+                        ))
+                );
+        Map<String, Double> accumulated = Stream.of(pointG100, pointB50T100)
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        Double::sum
+                ));
 
+        Double total = accumulated.values().stream().reduce(0.0, (x, y) -> x + y);
+        Map<String, Double> totalPoint = new HashMap<>();
+        totalPoint.put("total".toUpperCase(), total);
+        accumulated.putAll(totalPoint);
 
-        return null;
-    }
-    private String getMonth(){
-        return "";
+        return accumulated;
     }
 
     public List<OutboundItem> findAll(){
