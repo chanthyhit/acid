@@ -1,5 +1,6 @@
 package com.acid.acid.service;
 
+import com.acid.acid.utilities.Utility;
 import com.acid.acid.entity.Customer;
 import com.acid.acid.entity.OutboundItem;
 import com.acid.acid.repository.CustomerRepository;
@@ -12,12 +13,8 @@ import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.Date;
-import java.text.DecimalFormat;
 import java.util.*;
-import java.util.function.DoubleFunction;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,7 +47,7 @@ public class CustomerService {
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .filter(p -> (p.getUnitPrice() * p.getQty()) > 100)
-                                .map(p -> round((p.getUnitPrice() * p.getQty()) * 2,0))
+                                .map(p -> Utility.round((p.getUnitPrice() * p.getQty()) * 2,0))
                                 .reduce(0.0, Double::sum)
                 ));
         var pointB50T100 = histories.entrySet().stream()
@@ -58,7 +55,7 @@ public class CustomerService {
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .filter(p -> (p.getUnitPrice() * p.getQty()) >= 50 && (p.getUnitPrice() * p.getQty()) <= 100)
-                                .map(p -> round((p.getUnitPrice() * p.getQty()) * 1,0))
+                                .map(p -> Utility.round((p.getUnitPrice() * p.getQty()) * 1, 0))
                                 .reduce(0.0, Double::sum)
                 ));
 
@@ -122,11 +119,5 @@ public class CustomerService {
             e.printStackTrace();
         }
         return customers;
-    }
-    private static double round(double value, int decimalPlaces) {
-        if (decimalPlaces < 0) throw new IllegalArgumentException();
-        BigDecimal bd = BigDecimal.valueOf(value);
-        bd = bd.setScale(decimalPlaces, BigDecimal.ROUND_HALF_UP);
-        return bd.doubleValue();
     }
 }
