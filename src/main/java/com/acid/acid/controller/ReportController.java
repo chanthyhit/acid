@@ -31,12 +31,22 @@ public class ReportController {
         return outService.findAll();
     }
 
-    @RequestMapping("/summaries")
-    public Map<String, Integer> getPoint(){
-        cusService.calPoint();
-        return null;
+    @RequestMapping("/history")
+    public Map<String, List<OutboundItem>> getSaleHistories(){
+        return cusService.getSaleHistories();
     }
 
+    @GetMapping("/summary_by_email")
+    public Map<String, Double> summaryByEmail(){
+        return cusService.calPointByEmail();
+    }
 
-
+    /**
+     * Implementing
+     * @return
+     */
+    @GetMapping("/summary_by_month")
+    public Map<String, Double> summaryByMonth(){
+        return outService.calPointByMonth();
+    }
 }

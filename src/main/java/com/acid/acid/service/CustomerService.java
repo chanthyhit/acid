@@ -12,11 +12,14 @@ import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.function.DoubleFunction;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -40,17 +43,63 @@ public class CustomerService {
      * Given a record of every transaction during a three-month period, calculate the reward points earned for each customer per month and total.
      */
 
-    public void calPoint(){
-        Map<String, Integer> pointO100;
-        Map<String, Integer>  point50T100;
+    public Map<String, Double> calPointByEmail() {
+        var histories = getSaleHistories();
+        var pointG100 = histories.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(p -> (p.getUnitPrice() * p.getQty()) > 100)
+                                .map(p -> round((p.getUnitPrice() * p.getQty()) * 2,0))
+                                .reduce(0.0, Double::sum)
+                ));
+        var pointB50T100 = histories.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(p -> (p.getUnitPrice() * p.getQty()) >= 50 && (p.getUnitPrice() * p.getQty()) <= 100)
+                                .map(p -> round((p.getUnitPrice() * p.getQty()) * 1,0))
+                                .reduce(0.0, Double::sum)
+                ));
 
+        Map<String, Double> accumulated = Stream.of(pointG100, pointB50T100)
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(
+                   Map.Entry::getKey,
+                   Map.Entry::getValue,
+                   Double::sum
+                ));
+
+        Double total = accumulated.values().stream().reduce(0.0, Double::sum);
+        Map<String, Double> totalPoint = new HashMap<>();
+        totalPoint.put("total", total);
+        accumulated.putAll(totalPoint);
+
+        return accumulated.entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(Collectors.toMap(
+                   Map.Entry::getKey,
+                   Map.Entry::getValue,
+                        (x, y) -> x,
+                        LinkedHashMap::new
+                ));
+    }
+
+    public Map<String, List<OutboundItem>> getSaleHistories(){
+        return repository.findAll().stream()
+                .collect(Collectors.toMap(
+                        Customer::getEmail,
+                        customer -> outService.findAll().stream()
+                                .filter(i -> i.getCustomerId() == customer.getId())
+                                .collect(Collectors.toList())
+                ));
     }
 
     @PostConstruct
-    public void loadCustomers1() {
+    public void loadCustomers() {
         repository.saveAll(readCustomers());
     }
-    public List<Customer> readCustomers(){
+    private List<Customer> readCustomers(){
         customers = new ArrayList<>();
         try {
             Resource resource = resourceLoader.getResource("classpath:customers.csv");
@@ -73,5 +122,11 @@ public class CustomerService {
             e.printStackTrace();
         }
         return customers;
+    }
+    private static double round(double value, int decimalPlaces) {
+        if (decimalPlaces < 0) throw new IllegalArgumentException();
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return bd.doubleValue();
     }
 }
