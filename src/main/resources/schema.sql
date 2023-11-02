@@ -11,6 +11,7 @@ CREATE TABLE outbound_item (
     item_name VARCHAR(255),
     vendor VARCHAR(255),
     unit_price DECIMAL(13,2),
+    qty INT,
     date_time VARCHAR(50),
     cus_id INT
 );
