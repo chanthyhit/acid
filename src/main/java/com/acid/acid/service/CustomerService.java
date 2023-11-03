@@ -49,7 +49,27 @@ public class CustomerService {
                                                 i -> Utility.getMonth(i.getDateTime()),
                                                 Collectors.summingDouble(i-> Utility.calculatePoint(i)))
                                 )));
-        return groupingQtyByEmailAndDate;
+        var total = inputData.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(i -> i.getUnitPrice() * i.getQty() >= 50)
+                                .collect(Collectors.groupingBy(
+                                        i -> "total",
+                                        Collectors.summingDouble(i-> Utility.calculatePoint(i)))
+                                )));
+        Map<String, Map<String, Double>> result = new HashMap<>(groupingQtyByEmailAndDate);
+        for (Map.Entry<String, Map<String, Double>> entry : total.entrySet()){
+            var email = entry.getKey();
+            Map<String, Double> totalMap = entry.getValue();
+            if (result.containsKey(email)) {
+                Map<String, Double> existingData = result.get(email);
+                existingData.put("TOTAL", totalMap.get("total"));
+            } else {
+                result.put(email, totalMap);
+            }
+        }
+        return result;
     }
 
     public Map<String, Double> calPointByEmail() {

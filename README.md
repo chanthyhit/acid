@@ -54,14 +54,16 @@ Given a record of every transaction during a three-month period, calculate the r
 ```javascript
 {
     "william_davis@example.com": {
-        "OCTOBER": 174040.0,
-        "SEPTEMBER": 119080.0,
-        "NOVEMBER": 107830.0
+        "TOTAL": 365740.0,
+        "OCTOBER": 132520.0,
+        "SEPTEMBER": 139290.0,
+        "NOVEMBER": 93930.0
     },
     "emma_rodriguez@example.com": {
-        "OCTOBER": 104820.0,
-        "SEPTEMBER": 121180.0,
-        "NOVEMBER": 84420.0
+        "TOTAL": 220480.0,
+        "OCTOBER": 49270.0,
+        "SEPTEMBER": 94220.0,
+        "NOVEMBER": 76990.0
     },
     ...
 }
