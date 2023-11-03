@@ -1,11 +1,18 @@
 package com.acid.acid.utilities;
 
+import com.acid.acid.entity.OutboundItem;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 
 public class Utility {
+
+    public static double calculatePoint(OutboundItem item){
+        var amount = Utility.round(item.getQty() * item.getUnitPrice(), 0);
+        return (amount >= 50 && amount <= 100) ? amount : amount * 2;
+    }
     public static double round(double value, int decimalPlaces) {
         if (decimalPlaces < 0) throw new IllegalArgumentException();
         BigDecimal bd = BigDecimal.valueOf(value);
