@@ -12,6 +12,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.acid.acid.utilities.Utility.getCusId;
+import static com.acid.acid.utilities.Utility.getQty;
+
 @Service
 @RequiredArgsConstructor
 public class OutboundItemService {
@@ -26,25 +29,19 @@ public class OutboundItemService {
                 .filter(i -> i.getQty() * i.getUnitPrice() >= 50)
                 .collect(Collectors.groupingBy(
                         i -> Utility.getMonth(i.getDateTime()),
-                        Collectors.reducing(0.0, i-> Utility.calculatePoint(i), Double::sum)
-                ));
-
-        Double total = reward.values().stream().reduce(0.0, (x, y) -> x + y);
-        Map<String, Double> totalPoint = new HashMap<>();
-        totalPoint.put("total".toUpperCase(), total);
-        reward.putAll(totalPoint);
-
+                        Collectors.reducing(0.0, Utility::calculatePoint, Double::sum)));
+        Double total = reward.values().stream().reduce(0.0, Double::sum);
+        reward.put("total", total);
         return reward;
     }
 
-    public List<OutboundItem> findAll(){
-        return repository.findAll();
-    }
+    public List<OutboundItem> findAll() { return repository.findAll(); }
 
     @PostConstruct
     public void loadutboundItem() {
         repository.saveAll(readOutboundItem());
     }
+
     public List<OutboundItem> readOutboundItem(){
         LocalDate startDate = LocalDate.of(2023, 9, 1);
         LocalDate endDate = LocalDate.of(2023, 11, 30);
@@ -87,14 +84,5 @@ public class OutboundItemService {
             startDate = startDate.plusDays(1);
         }
         return list;
-    }
-
-    private int getQty(){
-        return new Random().nextInt(15) + 1;
-    }
-    private long getCusId(){
-        long min = 1;
-        long max = 51;
-        return (long) Math.floor(Math.random() * (max - min + 1) + min);
     }
 }

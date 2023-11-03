@@ -6,10 +6,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
 
 public class Utility {
 
-    public static double calculatePoint(OutboundItem item){
+    public static double calculatePoint(OutboundItem item) {
         var amount = Utility.round(item.getQty() * item.getUnitPrice(), 0);
         return (amount >= 50 && amount <= 100) ? amount : amount * 2;
     }
@@ -26,5 +27,15 @@ public class Utility {
         LocalDate d = LocalDate.parse(date, formatter);
         Month month = d.getMonth();
         return month.name();
+    }
+
+    public static int getQty(){
+        return new Random().nextInt(15) + 1;
+    }
+
+    public static long getCusId(){
+        long min = 1;
+        long max = 51;
+        return (long) Math.floor(Math.random() * (max - min + 1) + min);
     }
 }

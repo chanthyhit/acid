@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerService {
 
-    private List<Customer> customers;
-
     private final CustomerRepository repository;
     private final OutboundItemService outService;
     private final ResourceLoader resourceLoader;
@@ -30,13 +28,6 @@ public class CustomerService {
     public List<Customer> findAll(){
         return repository.findAll();
     }
-
-    /**
-     * A customer receives 2 points for every dollar spent over $100 in each transaction, plus 1 point for every dollar spent between $50 and $100 in each transaction.
-     * (e.g. a $120 purchase = 2x$20 + 1x$50 = 90 points).
-     *
-     * Given a record of every transaction during a three-month period, calculate the reward points earned for each customer per month and total.
-     */
 
     public Map<String, Map<String, Double>> summaryByEmailAndMonth(){
         var histories = getSaleHistories();
@@ -56,14 +47,12 @@ public class CustomerService {
                                 .collect(Collectors.groupingBy(
                                         i -> "total",
                                         Collectors.summingDouble(Utility::calculatePoint)))));
-        for (Map.Entry<String, Map<String, Double>> entry : total.entrySet()){
-            var email = entry.getKey();
-            Map<String, Double> totalMap = entry.getValue();
-            if (groupingByEmailAndDate.containsKey(email)) {
-                Map<String, Double> existingData = groupingByEmailAndDate.get(email);
-                existingData.put("TOTAL", totalMap.get("total"));
-            } else groupingByEmailAndDate.put(email, totalMap);
-        }
+        total.forEach((email, totalMap) -> {
+            groupingByEmailAndDate.merge(email, totalMap, (existingData, newTotal) -> {
+                existingData.put("TOTAL", newTotal.get("total"));
+                return existingData;
+            });
+        });
         return groupingByEmailAndDate;
     }
 
@@ -72,41 +61,36 @@ public class CustomerService {
         var reward = histories.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> (Double) entry.getValue().stream()
+                        entry -> entry.getValue().stream()
                                 .filter(p -> (p.getUnitPrice() * p.getQty()) >= 50)
                                 .mapToDouble(Utility::calculatePoint).sum()));
-
-        Double total = reward.values().stream().reduce(0.0, Double::sum);
-        Map<String, Double> totalPoint = new HashMap<>();
-        totalPoint.put("total", total);
-        reward.putAll(totalPoint);
-
+        double total = reward.values().stream().reduce(0.0, Double::sum);
+        reward.put("total", total);
         return reward.entrySet().stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                 .collect(Collectors.toMap(
                    Map.Entry::getKey,
                    Map.Entry::getValue,
                         (x, y) -> x,
-                        LinkedHashMap::new
-                ));
+                        LinkedHashMap::new));
     }
 
-    public Map<String, List<OutboundItem>> getSaleHistories(){
+    public Map<String, List<OutboundItem>> getSaleHistories() {
         return repository.findAll().stream()
                 .collect(Collectors.toMap(
                         Customer::getEmail,
                         customer -> outService.findAll().stream()
                                 .filter(i -> i.getCustomerId() == customer.getId())
-                                .collect(Collectors.toList())
-                ));
+                                .collect(Collectors.toList())));
     }
 
     @PostConstruct
     public void loadCustomers() {
         repository.saveAll(readCustomers());
     }
-    private List<Customer> readCustomers(){
-        customers = new ArrayList<>();
+
+    private List<Customer> readCustomers() {
+        List<Customer> customers = new ArrayList<>();
         try {
             Resource resource = resourceLoader.getResource("classpath:customers.csv");
             BufferedReader reader = new BufferedReader(new FileReader(resource.getURL().getPath()));
