@@ -45,4 +45,9 @@ public class ReportController {
     public Map<String, Double> summaryByMonth(){
         return outService.calPointByMonth();
     }
+
+    @GetMapping("/summary_by_email_month")
+    Map<String, Map<String, Double>> summaryByEmailAndMonth(){
+        return cusService.summaryByEmailAndMonth();
+    }
 }
