@@ -12,10 +12,11 @@ import java.sql.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(name = "user_sequence", sequenceName = "user_sequence", allocationSize = 1)
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_sequence")
     private long id;
     @Column(name = "full_name")
     private String fullName;
