@@ -37,6 +37,10 @@ public class OutboundItemService {
 
     public List<OutboundItem> findAll() { return repository.findAll(); }
 
+    public long save(OutboundItem items) {
+        return repository.save(items).getId();
+    }
+
     @PostConstruct
     public void loadutboundItem() {
         repository.saveAll(readOutboundItem());

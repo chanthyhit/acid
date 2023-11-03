@@ -5,10 +5,7 @@ import com.acid.acid.entity.OutboundItem;
 import com.acid.acid.service.CustomerService;
 import com.acid.acid.service.OutboundItemService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +26,12 @@ public class ReportController {
     @RequestMapping(value = "/sold_items", method = RequestMethod.GET)
     public List<OutboundItem> outboundItems(){
         return outService.findAll();
+    }
+
+    @PostMapping(value = "/sold_items")
+    public String outboundItems(@RequestBody OutboundItem item){
+        long id = outService.save(item);
+        return String.format("Saved %d", id);
     }
 
     @RequestMapping("/history")

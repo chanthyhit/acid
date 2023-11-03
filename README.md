@@ -4,7 +4,7 @@ A customer receives 2 points for every dollar spent over $100 in each transactio
 Given a record of every transaction during a three-month period, calculate the reward points earned for each customer per month and total.
 
 
-1. All transactions </br>
+1. All transactions (raw data) </br>
 [localhost:8080/api/report/customers](localhost:8080/api/report/customers)
 ```javascript
 [
@@ -25,7 +25,7 @@ Given a record of every transaction during a three-month period, calculate the r
     ...
 ]
 ```
-&emsp;&emsp;[localhost:8080/api/report/sold_items](localhost:8080/api/report/sold_items)
+&emsp;&emsp;[localhost:8080/api/report/sold_items](localhost:8080/api/report/sold_items) //Support FindAll and Save </br>
 ```javascript
 [
     {
