@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -23,40 +22,19 @@ public class OutboundItemService {
 
     public Map<String, Double> calPointByMonth(){
         var histories = findAll();
-        var pointG100 = histories.stream()
-                .filter(i -> (i.getQty() * i.getUnitPrice()) > 100)
+        var reward = histories.stream()
+                .filter(i -> i.getQty() * i.getUnitPrice() >= 50)
                 .collect(Collectors.groupingBy(
                         i -> Utility.getMonth(i.getDateTime()),
-                        Collectors.reducing(
-                                0.0,
-                                i -> Utility.round((i.getQty() * i.getUnitPrice()) * 2,0),
-                                Double::sum
-                        ))
-                );
-        var pointB50T100 = histories.stream()
-                .filter(i -> (i.getUnitPrice() * i.getQty()) >= 50 && (i.getUnitPrice() * i.getQty()) <= 100)
-                .collect(Collectors.groupingBy(
-                        i -> Utility.getMonth(i.getDateTime()),
-                        Collectors.reducing(
-                                0.0,
-                                i -> Utility.round((i.getUnitPrice() * i.getQty()) * 1, 0),
-                                Double::sum
-                        ))
-                );
-        Map<String, Double> accumulated = Stream.of(pointG100, pointB50T100)
-                .flatMap(map -> map.entrySet().stream())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        Double::sum
+                        Collectors.reducing(0.0, i-> Utility.calculatePoint(i), Double::sum)
                 ));
 
-        Double total = accumulated.values().stream().reduce(0.0, (x, y) -> x + y);
+        Double total = reward.values().stream().reduce(0.0, (x, y) -> x + y);
         Map<String, Double> totalPoint = new HashMap<>();
         totalPoint.put("total".toUpperCase(), total);
-        accumulated.putAll(totalPoint);
+        reward.putAll(totalPoint);
 
-        return accumulated;
+        return reward;
     }
 
     public List<OutboundItem> findAll(){
@@ -76,7 +54,6 @@ public class OutboundItemService {
         long id = 0l;
         while (!startDate.isAfter(endDate)) {
             timeStamp = startDate.format(dateFormatter);
-            list.add(new OutboundItem(id, "Smart TV", "Samsung", 599.99, getQty(), timeStamp, getCusId()));
             list.add(new OutboundItem(id, "Smart TV", "Samsung", 599.99, getQty(), timeStamp, getCusId()));
             list.add(new OutboundItem(id, "Laptop (15 Ultrabook)", "Dell", 899.99, getQty(), timeStamp, getCusId()));
             list.add(new OutboundItem(id, "Smartphone (iPhone 13)", "Apple", 799.99, getQty(), timeStamp, getCusId()));
@@ -116,8 +93,8 @@ public class OutboundItemService {
         return new Random().nextInt(15) + 1;
     }
     private long getCusId(){
-        long min = 2822;
-        long max = 2822 + 51;
+        long min = 1;
+        long max = 51;
         return (long) Math.floor(Math.random() * (max - min + 1) + min);
     }
 }

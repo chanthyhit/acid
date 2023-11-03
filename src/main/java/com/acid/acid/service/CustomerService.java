@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,43 +35,39 @@ public class CustomerService {
      * A customer receives 2 points for every dollar spent over $100 in each transaction, plus 1 point for every dollar spent between $50 and $100 in each transaction.
      * (e.g. a $120 purchase = 2x$20 + 1x$50 = 90 points).
      *
-     *
      * Given a record of every transaction during a three-month period, calculate the reward points earned for each customer per month and total.
      */
 
+    public Map<String, Map<String, Double>> summaryByEmailAndMonth(){
+        var inputData = getSaleHistories();
+        Map<String, Map<String, Double>> groupingQtyByEmailAndDate = inputData.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(i -> i.getUnitPrice() * i.getQty() >= 50)
+                                .collect(Collectors.groupingBy(
+                                                i -> Utility.getMonth(i.getDateTime()),
+                                                Collectors.summingDouble(i-> Utility.calculatePoint(i)))
+                                )));
+        return groupingQtyByEmailAndDate;
+    }
+
     public Map<String, Double> calPointByEmail() {
         var histories = getSaleHistories();
-        var pointG100 = histories.entrySet().stream()
+        var reward = histories.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(p -> (p.getUnitPrice() * p.getQty()) > 100)
-                                .map(p -> Utility.round((p.getUnitPrice() * p.getQty()) * 2,0))
-                                .reduce(0.0, Double::sum)
-                ));
-        var pointB50T100 = histories.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .filter(p -> (p.getUnitPrice() * p.getQty()) >= 50 && (p.getUnitPrice() * p.getQty()) <= 100)
-                                .map(p -> Utility.round((p.getUnitPrice() * p.getQty()) * 1, 0))
-                                .reduce(0.0, Double::sum)
+                                .filter(p -> (p.getUnitPrice() * p.getQty()) >= 50)
+                                .collect(Collectors.summingDouble(i-> Utility.calculatePoint(i)))
                 ));
 
-        Map<String, Double> accumulated = Stream.of(pointG100, pointB50T100)
-                .flatMap(map -> map.entrySet().stream())
-                .collect(Collectors.toMap(
-                   Map.Entry::getKey,
-                   Map.Entry::getValue,
-                   Double::sum
-                ));
-
-        Double total = accumulated.values().stream().reduce(0.0, Double::sum);
+        Double total = reward.values().stream().reduce(0.0, Double::sum);
         Map<String, Double> totalPoint = new HashMap<>();
         totalPoint.put("total", total);
-        accumulated.putAll(totalPoint);
+        reward.putAll(totalPoint);
 
-        return accumulated.entrySet().stream()
+        return reward.entrySet().stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                 .collect(Collectors.toMap(
                    Map.Entry::getKey,
@@ -106,13 +101,7 @@ public class CustomerService {
             while ((line = reader.readLine()) != null){
                 String[] fields = line.split(",");
                 customers.add(
-                        new Customer(
-                            Long.valueOf(fields[0]),
-                            fields[1],
-                            fields[2],
-                            fields[3],
-                            Date.valueOf(fields[4])
-                        )
+                        new Customer(Long.valueOf(fields[0]), fields[1], fields[2], fields[3], Date.valueOf(fields[4]))
                 );
             }
         } catch (IOException e) {
