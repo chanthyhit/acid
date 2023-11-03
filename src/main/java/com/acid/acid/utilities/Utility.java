@@ -13,6 +13,7 @@ public class Utility {
         var amount = Utility.round(item.getQty() * item.getUnitPrice(), 0);
         return (amount >= 50 && amount <= 100) ? amount : amount * 2;
     }
+
     public static double round(double value, int decimalPlaces) {
         if (decimalPlaces < 0) throw new IllegalArgumentException();
         BigDecimal bd = BigDecimal.valueOf(value);

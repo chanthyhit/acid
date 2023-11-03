@@ -39,37 +39,32 @@ public class CustomerService {
      */
 
     public Map<String, Map<String, Double>> summaryByEmailAndMonth(){
-        var inputData = getSaleHistories();
-        Map<String, Map<String, Double>> groupingQtyByEmailAndDate = inputData.entrySet().stream()
+        var histories = getSaleHistories();
+        Map<String, Map<String, Double>> groupingByEmailAndDate = histories.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .filter(i -> i.getUnitPrice() * i.getQty() >= 50)
                                 .collect(Collectors.groupingBy(
                                                 i -> Utility.getMonth(i.getDateTime()),
-                                                Collectors.summingDouble(i-> Utility.calculatePoint(i)))
-                                )));
-        var total = inputData.entrySet().stream()
+                                                Collectors.summingDouble(Utility::calculatePoint)))));
+        var total = histories.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .filter(i -> i.getUnitPrice() * i.getQty() >= 50)
                                 .collect(Collectors.groupingBy(
                                         i -> "total",
-                                        Collectors.summingDouble(i-> Utility.calculatePoint(i)))
-                                )));
-        Map<String, Map<String, Double>> result = new HashMap<>(groupingQtyByEmailAndDate);
+                                        Collectors.summingDouble(Utility::calculatePoint)))));
         for (Map.Entry<String, Map<String, Double>> entry : total.entrySet()){
             var email = entry.getKey();
             Map<String, Double> totalMap = entry.getValue();
-            if (result.containsKey(email)) {
-                Map<String, Double> existingData = result.get(email);
+            if (groupingByEmailAndDate.containsKey(email)) {
+                Map<String, Double> existingData = groupingByEmailAndDate.get(email);
                 existingData.put("TOTAL", totalMap.get("total"));
-            } else {
-                result.put(email, totalMap);
-            }
+            } else groupingByEmailAndDate.put(email, totalMap);
         }
-        return result;
+        return groupingByEmailAndDate;
     }
 
     public Map<String, Double> calPointByEmail() {
@@ -77,10 +72,9 @@ public class CustomerService {
         var reward = histories.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
+                        entry -> (Double) entry.getValue().stream()
                                 .filter(p -> (p.getUnitPrice() * p.getQty()) >= 50)
-                                .collect(Collectors.summingDouble(i-> Utility.calculatePoint(i)))
-                ));
+                                .mapToDouble(Utility::calculatePoint).sum()));
 
         Double total = reward.values().stream().reduce(0.0, Double::sum);
         Map<String, Double> totalPoint = new HashMap<>();
