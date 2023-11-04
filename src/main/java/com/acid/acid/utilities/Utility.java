@@ -34,7 +34,7 @@ public class Utility {
     }
 
     public static int getQty(){
-        return new Random().nextInt(15) + 1;
+        return new Random().nextInt(5) + 1;
     }
 
     public static long getCusId(){
