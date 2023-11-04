@@ -3,16 +3,15 @@ A customer receives 2 points for every dollar spent over $100 in each transactio
 (e.g. a $120 purchase = 2x$20 + 1x$50 = 90 points).
 Given a record of every transaction during a three-month period, calculate the reward points earned for each customer per month and total.
 
-
 1. All transactions (raw data) </br>
 [localhost:8080/api/report/customers](localhost:8080/api/report/customers)
 ```javascript
 [
     {
         "id": 1,
-        "fullName": "John Kevin",
+        "fullName": "Chanthy Hit",
         "gender": "Male",
-        "email": "john_kevin@example.com",
+        "email": "chanthy_hit@example.com",
         "date": "2023-11-01"
     },
     {
@@ -25,26 +24,26 @@ Given a record of every transaction during a three-month period, calculate the r
     ...
 ]
 ```
-&emsp;&emsp;[localhost:8080/api/report/sold_items](localhost:8080/api/report/sold_items) //Support FindAll and Save </br>
+&emsp;&emsp;[localhost:8080/api/report/sold_items](localhost:8080/api/report/sold_items) 👍findAll and save </br>
 ```javascript
 [
     {
-        "id": 1,
+        "id": 2731,
         "itemName": "Smart TV",
         "vendor": "Samsung",
-        "unitPrice": 599.99,
-        "qty": 5,
+        "unitPrice": 120.0,
+        "qty": 1,
         "dateTime": "2023/09/01",
-        "customerId": 12
+        "customerId": 1
     },
     {
-        "id": 2,
-        "itemName": "Laptop (15 Ultrabook)",
-        "vendor": "Dell",
-        "unitPrice": 899.99,
-        "qty": 6,
-        "dateTime": "2023/09/01",
-        "customerId": 34
+        "id": 2730,
+        "itemName": "Home Security Camera",
+        "vendor": "Arlo",
+        "unitPrice": 129.99,
+        "qty": 3,
+        "dateTime": "2023/11/30",
+        "customerId": 36
     },
     ...
 ]
@@ -53,77 +52,53 @@ Given a record of every transaction during a three-month period, calculate the r
    [localhost:8080/api/report/summary_by_email_month](localhost:8080/api/report/summary_by_email_month)
 ```javascript
 {
-    "william_davis@example.com": {
-        "TOTAL": 365740.0,
-        "OCTOBER": 132520.0,
-        "SEPTEMBER": 139290.0,
-        "NOVEMBER": 93930.0
+    "chanthy_hit@example.com": {
+        "TOTAL": 90.0,
+        "SEPTEMBER": 90.0
     },
-    "emma_rodriguez@example.com": {
-        "TOTAL": 220480.0,
-        "OCTOBER": 49270.0,
-        "SEPTEMBER": 94220.0,
-        "NOVEMBER": 76990.0
+    "abigail_brown@example.com": {
+        "TOTAL": 84110.0,
+        "OCTOBER": 37600.0,
+        "SEPTEMBER": 24850.0,
+        "NOVEMBER": 21660.0
     },
     ...
 }
 ```
-3. Reward points earned by month and email </br>
+3. Reward points earned by email and month </br>
 [localhost:8080/api/report/summary_by_email](localhost:8080/api/report/summary_by_email)
 ```javascript
 {
-    "total": 1.4450545E7,
-    "addison_thomas@example.com": 435160.0,
-    "lily_smith@example.com": 434250.0,
-    "sophia_king@example.com": 430885.0,
+    "total": 4910950.0,
+    "chanthy_hit@example.com": 90.0,
+    "alexander_lewis@example.com": 142700.0,
     ...
 }
 ```
 &emsp;&emsp;[localhost:8080/api/report/summary_by_month](localhost:8080/api/report/summary_by_month)
 ```javascript
 {
-    "TOTAL": 1.4450545E7,
-    "OCTOBER": 5007975.0,
-    "SEPTEMBER": 4881425.0,
-    "NOVEMBER": 4561145.0
+    "total": 4910950.0,
+    "OCTOBER": 1701520.0,
+    "SEPTEMBER": 1623535.0,
+    "NOVEMBER": 1585895.0
 }
 ```
 3. All transactions by email </br>
 [localhost:8080/api/report/history](localhost:8080/api/report/history)
 ```javascript
 {
-    "william_davis@example.com": [
+    "chanthy_hit@example.com": [
         {
-            "id": 65,
-            "itemName": "Gaming Console (PS5)",
-            "vendor": "Sony",
-            "unitPrice": 499.99,
-            "qty": 2,
-            "dateTime": "2023/09/03",
-            "customerId": 47
-        },
-        {
-            "id": 235,
-            "itemName": "Computer Monitor Stand",
-            "vendor": "VIVO",
-            "unitPrice": 29.99,
-            "qty": 13,
-            "dateTime": "2023/09/08",
-            "customerId": 47
-        },
-        ...
+            "id": 2731,
+            "itemName": "Smart TV",
+            "vendor": "Samsung",
+            "unitPrice": 120.0,
+            "qty": 1,
+            "dateTime": "2023/09/01",
+            "customerId": 1
+        }
     ],
-    "emma_rodriguez@example.com": [
-        {
-            "id": 149,
-            "itemName": "Wireless Earbuds (AirPods)",
-            "vendor": "Apple",
-            "unitPrice": 159.99,
-            "qty": 8,
-            "dateTime": "2023/09/05",
-            "customerId": 16
-        },
-        ...
-    ]
+    ...
 }
 ```
