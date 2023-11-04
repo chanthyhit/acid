@@ -11,8 +11,12 @@ import java.util.Random;
 public class Utility {
 
     public static double calculatePoint(OutboundItem item) {
-        var amount = Utility.round(item.getQty() * item.getUnitPrice(), 0);
-        return (amount >= 50 && amount <= 100) ? amount : amount * 2;
+        var amount = Utility.round(item.getQty() * item.getUnitPrice(),0);
+        var min = 50;
+        var max = 100;
+        return (amount >= min && amount <= max) ?
+                Math.min(min, amount - min) :
+                2 * (amount - max) + Math.min(min, amount - min);
     }
 
     public static double round(double value, int decimalPlaces) {
