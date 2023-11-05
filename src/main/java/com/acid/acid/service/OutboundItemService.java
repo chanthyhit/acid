@@ -12,8 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.acid.acid.utilities.Utility.getCusId;
-import static com.acid.acid.utilities.Utility.getQty;
+import static com.acid.acid.utilities.Utility.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +25,7 @@ public class OutboundItemService {
     public Map<String, Double> calPointByMonth(){
         var histories = findAll();
         var reward = histories.stream()
-                .filter(i -> i.getQty() * i.getUnitPrice() >= 50)
+                .filter(rewardData)
                 .collect(Collectors.groupingBy(
                         i -> Utility.getMonth(i.getDateTime()),
                         Collectors.reducing(0.0, Utility::calculatePoint, Double::sum)));

@@ -7,8 +7,11 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
+import java.util.function.Predicate;
 
 public class Utility {
+
+    public static Predicate<OutboundItem> rewardData = i -> i.getUnitPrice() * i.getQty() >= 50;
 
     public static double calculatePoint(OutboundItem item) {
         var amount = Utility.round(item.getQty() * item.getUnitPrice(),0);

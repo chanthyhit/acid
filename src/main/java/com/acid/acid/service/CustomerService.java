@@ -17,6 +17,8 @@ import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.acid.acid.utilities.Utility.rewardData;
+
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -35,7 +37,7 @@ public class CustomerService {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(i -> i.getUnitPrice() * i.getQty() >= 50)
+                                .filter(rewardData)
                                 .collect(Collectors.groupingBy(
                                                 i -> Utility.getMonth(i.getDateTime()),
                                                 Collectors.summingDouble(Utility::calculatePoint)))));
@@ -43,7 +45,7 @@ public class CustomerService {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(i -> i.getUnitPrice() * i.getQty() >= 50)
+                                .filter(rewardData)
                                 .collect(Collectors.groupingBy(
                                         i -> "total",
                                         Collectors.summingDouble(Utility::calculatePoint)))));
@@ -62,7 +64,7 @@ public class CustomerService {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
-                                .filter(p -> (p.getUnitPrice() * p.getQty()) >= 50)
+                                .filter(rewardData)
                                 .mapToDouble(Utility::calculatePoint).sum()));
         double total = reward.values().stream().reduce(0.0, Double::sum);
         reward.put("total", total);
